@@ -1,0 +1,33 @@
+name: Create BookStack Page from Issue
+
+on:
+  issues:
+    types: [opened, edited, closed]
+
+jobs:
+  create-page:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install marked
+
+      - name: Run BookStack script
+        env:
+          BOOKSTACK_URL: ${{ secrets.BOOKSTACK_URL }}
+          BOOKSTACK_BOOK_ID: ${{ secrets.BOOKSTACK_BOOK_ID }}
+          BOOKSTACK_API_ID: ${{ secrets.BOOKSTACK_API_ID }}
+          BOOKSTACK_API_SECRET: ${{ secrets.BOOKSTACK_API_SECRET }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ', ') }}
+        run: node .github/scripts/bookstack.js
+
